@@ -1,0 +1,48 @@
+classDiagram
+    class ILeitor {
+        <<abstract>>
+        +ler(caminho: string) object
+        +parse(conteudo: string) object
+    }
+    
+    class LeitorJSON {
+        +parse(conteudo: string) object
+    }
+    
+    class LeitorCSV {
+        +parse(conteudo: string) object
+    }
+
+    class IFormatador {
+        <<interface>>
+        +formatar(dados: object) string
+    }
+    
+    class FormatadorHTML {
+        +formatar(dados: object) string
+    }
+    
+    class FormatadorTXT {
+        +formatar(dados: object) string
+    }
+    
+    class FormatadorCSV {
+        +formatar(dados: object) string
+    }
+
+    class GeradorDeRelatorio {
+        -leitor : ILeitor
+        -formatador : IFormatador
+        +constructor(leitor: ILeitor, formatador: IFormatador)
+        +gerar(caminho: string) string
+    }
+
+    ILeitor <|-- LeitorJSON : herda
+    ILeitor <|-- LeitorCSV : herda
+
+    IFormatador <|-- FormatadorHTML : implementa
+    IFormatador <|-- FormatadorTXT : implementa
+    IFormatador <|-- FormatadorCSV : implementa
+
+    GeradorDeRelatorio o-- ILeitor : compõe
+    GeradorDeRelatorio o-- IFormatador : compõe

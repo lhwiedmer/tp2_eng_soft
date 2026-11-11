@@ -1,0 +1,21 @@
+classDiagram
+    class CidadesHTMLReport {
+        -cidades : string | object
+        +ler(caminho: string) void
+        +parse() void
+        +reportar() string
+    }
+
+    class CidadesTXTReporter {
+        -cidades : string | object
+        +ler(caminho: string) void
+        +parse() void
+        +reportar() string
+    }
+
+    class index_js {
+        <<script>>
+    }
+
+    index_js ..> CidadesHTMLReport : instancia e usa
+    index_js ..> CidadesTXTReporter : instancia e usa
