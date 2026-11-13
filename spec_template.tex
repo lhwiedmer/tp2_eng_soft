@@ -1,0 +1,512 @@
+% ===========================================================================
+% QUICK EXAMPLES
+% ===========================================================================
+%
+% The examples below show how to use the specification template.
+% They can be copied and adapted directly into the main document.
+%
+% ---------------------------------------------------------------------------
+% Functional Requirement
+% ---------------------------------------------------------------------------
+%
+% \fr{User Authentication}{
+%     \item The system shall allow users to authenticate using
+%     their username and password.
+%
+%     \item The system shall reject invalid credentials.
+%
+%     \item The system shall lock the account after three
+%     consecutive failed attempts.
+% }
+%
+% ---------------------------------------------------------------------------
+% Non-functional Requirement
+% ---------------------------------------------------------------------------
+%
+% \nfr{Authentication Response Time}{
+%     \item The system shall authenticate users within 2 seconds
+%     under normal operating conditions.
+% }
+%
+% ---------------------------------------------------------------------------
+% Use Case
+% ---------------------------------------------------------------------------
+%
+% \begin{usecase}{Perform Login}
+%
+%     \ucdescription{
+%         Allows a user to authenticate into the system using
+%         their credentials.
+%     }
+%
+%     \ucactors{
+%         \item User
+%     }
+%
+%     \ucpreconditions{
+%         \item The user must be registered in the system.
+%         \item The system must be available.
+%     }
+%
+%     \ucmainflow{
+%         \item The user enters their username and password.
+%         \item The system validates the provided credentials.
+%         \item The system creates an authenticated session.
+%         \item The system grants access to the application.
+%     }
+%
+%     \ucalternativeflow{
+%         \item If the credentials are invalid, the system informs
+%         the user that the username or password is incorrect.
+%
+%         \item If the account is locked, the system denies access.
+%     }
+%
+%     \ucbusinessrules{
+%         \item The provided password must match the registered password.
+%         \item The account is locked after three consecutive failed attempts.
+%     }
+%
+%     \ucpostconditions{
+%         \item The user is authenticated.
+%         \item An authenticated session exists for the user.
+%     }
+
+%     \ucrelatedrequirements{
+%         \item FR01
+%     }
+%
+% \end{usecase}
+%
+% ---------------------------------------------------------------------------
+% Operation Contract
+% ---------------------------------------------------------------------------
+%
+% \begin{operationcontract}{Create Order}
+%
+%     \ocoperation{
+%         createOrder(customer)
+%     }
+%
+%     \ocdescription{
+%         Creates a new order for the specified customer.
+%     }
+%
+%     \ocpreconditions{
+%         \item The customer must exist.
+%         \item The customer must be active.
+%     }
+%
+%     \ocpostconditions{
+%         \item A new order is created.
+%         \item The order is associated with the customer.
+%         \item The order status is set to \texttt{OPEN}.
+%     }
+%
+%     \ocrelatedusecases{
+%         \item \ref{uc:place-order}
+%     }
+%
+% \end{operationcontract}
+%
+% ---------------------------------------------------------------------------
+% Referencing
+% ---------------------------------------------------------------------------
+%
+% Requirements:
+%
+% \ref{fr:user-authentication}
+% \ref{nfr:authentication-response-time}
+%
+% Use cases:
+%
+% \ref{uc:perform-login}
+%
+% Operation contracts:
+%
+% \ref{oc:create-order}
+%
+% The identifiers (FR01, NFR01, UC01, OC01, ...) are generated
+% automatically, and labels are generated from the item names.
+%
+% ===========================================================================
+
+
+% ===========================================================================
+% PACKAGES
+% ===========================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,margin=2cm]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{titling}
+\usepackage{graphicx}
+\usepackage[most]{tcolorbox}
+
+% ---------------------------------------------------------------------------
+% Customizations
+% ---------------------------------------------------------------------------
+
+% Subsection formatting
+\titleformat{\subsection}
+  {\normalfont\large\bfseries}
+  {\thesubsection}
+  {1em}
+  {\underline}
+
+% Itemize formatting
+\setlist[itemize,1]{label=$\bullet$}
+\setlist[itemize,2]{label=$\circ$}
+\setlist[itemize,3]{label=$\diamond$}
+
+% ---------------------------------------------------------------------------
+% Title
+% ---------------------------------------------------------------------------
+
+\setlength{\droptitle}{-2cm}
+
+\pretitle{\begin{flushleft}\LARGE\bfseries}
+\posttitle{\end{flushleft}}
+
+\preauthor{\begin{flushleft}\large}
+\postauthor{\end{flushleft}}
+
+\predate{\begin{flushleft}\large}
+\postdate{\end{flushleft} \vspace{-1cm}}
+
+% ---------------------------------------------------------------------------
+% Requirements
+% ---------------------------------------------------------------------------
+
+\newcounter{functionalrequirement}
+\newcounter{nonfunctionalrequirement}
+
+% Functional requirement identifier: FR01, FR02, ...
+\renewcommand{\thefunctionalrequirement}{%
+    FR\ifnum\value{functionalrequirement}<10 0\fi\arabic{functionalrequirement}%
+}
+
+% Non-functional requirement identifier: NFR01, NFR02, ...
+\renewcommand{\thenonfunctionalrequirement}{%
+    NFR\ifnum\value{nonfunctionalrequirement}<10 0\fi\arabic{nonfunctionalrequirement}%
+}
+
+\ExplSyntaxOn
+
+% Convert requirement name into a stable label.
+\cs_new_protected:Npn \requirement_slug:n #1
+{
+    % Convert to lowercase.
+    \tl_set:Nx \l_tmpa_tl
+    {
+        \str_lowercase:n { #1 }
+    }
+
+    \str_replace_all:Nnn \l_tmpa_tl { á } { a }
+    \str_replace_all:Nnn \l_tmpa_tl { à } { a }
+    \str_replace_all:Nnn \l_tmpa_tl { â } { a }
+    \str_replace_all:Nnn \l_tmpa_tl { ã } { a }
+    \str_replace_all:Nnn \l_tmpa_tl { ä } { a }
+
+    \str_replace_all:Nnn \l_tmpa_tl { é } { e }
+    \str_replace_all:Nnn \l_tmpa_tl { è } { e }
+    \str_replace_all:Nnn \l_tmpa_tl { ê } { e }
+    \str_replace_all:Nnn \l_tmpa_tl { ë } { e }
+
+    \str_replace_all:Nnn \l_tmpa_tl { í } { i }
+    \str_replace_all:Nnn \l_tmpa_tl { ì } { i }
+    \str_replace_all:Nnn \l_tmpa_tl { î } { i }
+    \str_replace_all:Nnn \l_tmpa_tl { ï } { i }
+
+    \str_replace_all:Nnn \l_tmpa_tl { ó } { o }
+    \str_replace_all:Nnn \l_tmpa_tl { ò } { o }
+    \str_replace_all:Nnn \l_tmpa_tl { ô } { o }
+    \str_replace_all:Nnn \l_tmpa_tl { õ } { o }
+    \str_replace_all:Nnn \l_tmpa_tl { ö } { o }
+
+    \str_replace_all:Nnn \l_tmpa_tl { ú } { u }
+    \str_replace_all:Nnn \l_tmpa_tl { ù } { u }
+    \str_replace_all:Nnn \l_tmpa_tl { û } { u }
+    \str_replace_all:Nnn \l_tmpa_tl { ü } { u }
+
+    \str_replace_all:Nnn \l_tmpa_tl { ç } { c }
+
+    % Replace every sequence of non-alphanumeric characters with '-'.
+    \regex_replace_all:nnN
+        { [^a-z0-9]+ }
+        { - }
+        \l_tmpa_tl
+
+    % Remove '-' from the beginning.
+    \regex_replace_once:nnN
+        { \A-+ }
+        { }
+        \l_tmpa_tl
+
+    % Remove '-' from the end.
+    \regex_replace_once:nnN
+        { -+\Z }
+        { }
+        \l_tmpa_tl
+}
+
+% Functional requirement
+\NewDocumentCommand{\fr}{m +m}
+{
+    \refstepcounter{functionalrequirement}
+    \noindent
+    \textbf{\thefunctionalrequirement{} - #1}
+    \requirement_slug:n { #1 }
+    \exp_args:Nx \label { fr:\l_tmpa_tl }
+
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #2
+    \end{itemize}
+
+    \par\medskip
+}
+
+% Non-functional requirement
+\NewDocumentCommand{\nfr}{m +m}
+{
+    \refstepcounter{nonfunctionalrequirement}
+    \noindent
+    \textbf{\thenonfunctionalrequirement{} - #1}
+    \requirement_slug:n { #1 }
+    \exp_args:Nx \label { nfr:\l_tmpa_tl }
+
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #2
+    \end{itemize}
+
+    \par\medskip
+}
+
+\ExplSyntaxOff
+
+% ---------------------------------------------------------------------------
+% Use Cases
+% ---------------------------------------------------------------------------
+
+\newcounter{usecase}
+
+% Use case identifier: UC01, UC02, ...
+\renewcommand{\theusecase}{%
+    UC\ifnum\value{usecase}<10 0\fi\arabic{usecase}%
+}
+
+% Use case box
+\newtcolorbox{usecasebox}{
+    enhanced,
+    breakable,
+    lines before break=15,
+    colback=white,
+    colframe=black!40,
+    boxrule=0.5pt,
+    arc=2pt,
+    left=8pt,
+    right=8pt,
+    top=6pt,
+    bottom=6pt,
+    before skip=8pt,
+    after skip=12pt,
+    segmentation style={
+        line width=0.5pt,
+        solid
+    }
+}
+
+\ExplSyntaxOn
+
+% Use case environment
+\NewDocumentEnvironment{usecase}{m}
+{
+    \refstepcounter{usecase}
+
+    % Generate stable label from the use case name.
+    \requirement_slug:n { #1 }
+    \exp_args:Nx \label { uc:\l_tmpa_tl }
+
+    % Compact title, similar to requirements.
+    \begin{usecasebox}
+    \noindent
+    \textbf{\theusecase{} - #1}
+    \par\smallskip
+    \tcblower
+}
+{
+    \end{usecasebox}
+}
+
+\ExplSyntaxOff
+
+% Use Case Fields ----------------------------------------
+\newcommand{\ucdescription}[1]{
+    \noindent
+    \textbf{Description}
+    \par
+    \leftskip=1em
+    #1
+    \par
+    \leftskip=0pt
+    \medskip
+}
+
+\newcommand{\ucactors}[1]{
+    \noindent
+    \textbf{Actors}
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #1
+    \end{itemize}
+}
+
+\newcommand{\ucrelatedrequirements}[1]{
+    \noindent
+    \textbf{Related requirements}
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #1
+    \end{itemize}
+}
+
+\newcommand{\ucpreconditions}[1]{
+    \noindent
+    \textbf{Preconditions}
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #1
+    \end{itemize}
+}
+
+\newcommand{\ucmainflow}[1]{
+    \noindent
+    \textbf{Main Flow}
+    \begin{enumerate}[noitemsep, topsep=2pt, leftmargin=2.4em]
+        #1
+    \end{enumerate}
+}
+
+\newcommand{\ucalternativeflow}[1]{
+    \noindent
+    \textbf{Alternative Flows}
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #1
+    \end{itemize}
+}
+
+\newcommand{\ucbusinessrules}[1]{
+    \noindent
+    \textbf{Business Rules}
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #1
+    \end{itemize}
+}
+
+\newcommand{\ucpostconditions}[1]{
+    \noindent
+    \textbf{Postconditions}
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #1
+    \end{itemize}
+}
+
+% ---------------------------------------------------------------------------
+% Operation Contracts
+% ---------------------------------------------------------------------------
+
+\newcounter{operationcontract}
+
+% Operation contract identifier: OC01, OC02, ...
+\renewcommand{\theoperationcontract}{%
+    OC\ifnum\value{operationcontract}<10 0\fi\arabic{operationcontract}%
+}
+
+% Operation contract box
+\newtcolorbox{operationcontractbox}{
+    enhanced,
+    breakable,
+    lines before break=15,
+    colback=white,
+    colframe=black!40,
+    boxrule=0.5pt,
+    arc=2pt,
+    left=8pt,
+    right=8pt,
+    top=6pt,
+    bottom=6pt,
+    before skip=8pt,
+    after skip=12pt,
+    segmentation style={
+        line width=0.3pt,
+        draw=black!30
+    }
+}
+
+\ExplSyntaxOn
+
+% Operation contract environment
+\NewDocumentEnvironment{operationcontract}{m}
+{
+    \refstepcounter{operationcontract}
+
+    % Generate stable label from the operation contract name.
+    \requirement_slug:n { #1 }
+    \exp_args:Nx \label { oc:\l_tmpa_tl }
+
+    \begin{operationcontractbox}
+        \noindent
+        \textbf{\theoperationcontract{} - #1}
+
+        \tcblower
+}
+{
+    \end{operationcontractbox}
+}
+
+\ExplSyntaxOff
+
+% Operation Contract Fields ------------------------------------------
+\newcommand{\ocoperation}[1]{
+    \noindent
+    \textbf{Operation}
+    \par
+    \leftskip=1em
+    \texttt{#1}
+    \par
+    \leftskip=0pt
+    \medskip
+}
+
+\newcommand{\ocdescription}[1]{
+    \noindent
+    \textbf{Description}
+    \par
+    \leftskip=1em
+    #1
+    \par
+    \leftskip=0pt
+    \medskip
+}
+
+\newcommand{\ocpreconditions}[1]{
+    \noindent
+    \textbf{Preconditions}
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #1
+    \end{itemize}
+}
+
+\newcommand{\ocpostconditions}[1]{
+    \noindent
+    \textbf{Postconditions}
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #1
+    \end{itemize}
+}
+
+\newcommand{\ocrelatedusecases}[1]{
+    \noindent
+    \textbf{Related Use Cases}
+    \begin{itemize}[noitemsep, topsep=2pt, leftmargin=2em]
+        #1
+    \end{itemize}
+}

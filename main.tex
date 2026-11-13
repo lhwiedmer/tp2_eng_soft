@@ -1,0 +1,152 @@
+\documentclass[12pt,a4paper]{article}
+
+% Modelo fornecido para o trabalho: manter este arquivo na mesma pasta.
+\input{spec_template}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt plus 1pt minus 1pt}
+\hypersetup{hidelinks,pdftitle={TP2: Refatoracao de um Sistema de Geracao de Relatorios},pdflang={pt-BR}}
+\setlength{\emergencystretch}{4em}
+
+\title{TP2: Refatoração de um Sistema de Geração de Relatórios\\[5pt]
+\large Análise comparativa da implementação original e da arquitetura refatorada}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\vspace{5pt}
+\small
+
+\section{Introdução}
+O TP2 refatora um gerador de relatórios de cidades. O objetivo é preservar as saídas HTML e TXT e permitir novas fontes e formatos. A análise compara o código original com as alterações realizadas, destacando a redução de duplicação, a separação de responsabilidades, os princípios SOLID e os padrões de projeto.
+
+A função do sistema permanece a mesma: ler cidades e gerar um relatório. A mudança está na arquitetura, que passa a separar \textbf{leitura, interpretação, formatação e coordenação}.
+
+\section{Diagnóstico da implementação original}
+No sistema original, \texttt{CidadesHTMLReport} e \texttt{CidadesTXTReporter} repetiam três etapas: \texttt{ler(caminho)} acessava o arquivo com \texttt{fs.readFileSync()}, \texttt{parse()} aplicava \texttt{JSON.parse()} e \texttt{reportar()} produzia a saída. Os dois primeiros métodos tinham a mesma implementação nas duas classes.
+
+O atributo \texttt{this.cidades} armazenava inicialmente o texto lido e depois os objetos interpretados. Cada reporter acumulava acesso ao arquivo, interpretação e apresentação. Isso gerava \textbf{duplicação, baixo isolamento de responsabilidades e alto acoplamento}.
+
+O \texttt{index.js} também repetia a criação e execução dos reporters em blocos condicionais. O caminho \texttt{./data/cidades-2.json} era fixo. Para adicionar uma saída ou fonte, seria necessário alterar várias partes do fluxo.
+
+A refatoração substitui os dois fluxos completos \texttt{ler} $\rightarrow$ \texttt{parse} $\rightarrow$ \texttt{reportar} por componentes independentes de leitura e formatação.
+
+\section{Refatorações realizadas}
+
+
+\subsection{Extração da leitura para uma abstração comum}
+A leitura comum foi extraída para \texttt{ILeitor}. Seu método \texttt{ler(caminho)} lê o arquivo e chama \texttt{this.parse(conteudo)}. Assim, a operação compartilhada fica em um único lugar.
+
+\texttt{ILeitor} funciona como classe abstrata. As subclasses implementam \texttt{parse()} conforme a fonte. Os formatadores deixam de acessar arquivos e interpretar JSON. \textbf{A duplicação da leitura foi eliminada.}
+
+\subsection{Especialização das fontes de dados}
+\texttt{LeitorJSON} utiliza \texttt{JSON.parse()} para interpretar \texttt{cidades-2.json}. Já \texttt{LeitorCSV} processa as linhas de \texttt{cidades.csv} e cria objetos com os campos \texttt{Estado}, \texttt{ID} e \texttt{Nome}.
+
+Ambos entregam dados no mesmo formato interno. Por isso, qualquer fonte pode ser combinada com HTML, TXT ou CSV. \textbf{A origem dos dados não define mais o formato do relatório.}
+
+\subsection{Extração da formatação para classes independentes}
+O método \texttt{reportar()} foi substituído por formatadores independentes: \texttt{FormatadorHTML} e \texttt{FormatadorTXT}. Ambos estendem \texttt{IFormatador} e implementam \texttt{formatar(dados)}. A classe base define o contrato de saída, sem assumir a leitura dos dados.
+
+Também foi criado \texttt{FormatadorCSV}. Ele gera as colunas \texttt{Estado}, \texttt{ID} e \texttt{Nome} e trata aspas, vírgulas e quebras de linha nos campos. O novo formato foi incluído \textbf{sem modificar HTML, TXT ou o gerador}.
+
+\subsection{Introdução de uma classe coordenadora}
+Foi criada \texttt{GeradorDeRelatorio}, que recebe leitor e formatador no construtor. Em \texttt{gerar(caminho)}, chama \texttt{leitor.ler(caminho)} e encaminha o resultado a \texttt{formatador.formatar(dados)}.
+
+Antes, cada reporter executava todas as etapas. Agora, os leitores obtêm os dados, os formatadores produzem a saída e o gerador coordena a execução. \textbf{A composição reduz o acoplamento e evita repetir o fluxo.}
+
+\subsection{Seleção de fonte e formato pela linha de comando}
+O \texttt{index.js} original selecionava apenas HTML ou TXT e utilizava um arquivo fixo. Na nova versão, recebe dois argumentos de \texttt{process.argv}: caminho do arquivo e formato desejado.
+
+A extensão seleciona \texttt{LeitorJSON} ou \texttt{LeitorCSV}. O segundo argumento seleciona \texttt{FormatadorHTML}, \texttt{FormatadorTXT} ou \texttt{FormatadorCSV}. Os registros de classes substituem os blocos repetidos. O programa cria um único \texttt{GeradorDeRelatorio} com os componentes escolhidos.
+
+Exemplos: \texttt{node index.js ./data/cidades.csv html} e \texttt{node index.js ./data/cidades-2.json csv}. \textbf{O ponto de entrada configura a execução; não lê nem formata os dados.}
+
+\subsection{Correção pontual do relatório TXT}
+O relatório TXT apresentava a primeira cidade junto à linha de sinais de igualdade do cabeçalho. A correção proposta adiciona \verb|\n| após o cabeçalho de \texttt{FormatadorTXT.js}.
+
+A mudança fica restrita ao formatador TXT, sem afetar os leitores ou os demais formatos.
+
+\subsection{Tratamento de entradas inválidas e falhas de execução}
+O \texttt{index.js} passou a validar a extensão do arquivo e o formato solicitado. Se uma opção for inválida, informa o uso correto e encerra com erro.
+
+A geração também foi envolvida por \texttt{try/catch}. O erro \texttt{ENOENT} recebe uma mensagem de arquivo não encontrado; outras falhas exibem a descrição da exceção. As mensagens utilizam \texttt{console.error()}, preservando a saída padrão para o relatório, inclusive quando redirecionada com \texttt{>}.
+
+\textbf{O tratamento centralizado facilita o diagnóstico sem duplicar verificações nos formatadores.}
+
+\section{Arquitetura refatorada e padrões de projeto}
+A arquitetura original possuía dois reporters completos, cada um responsável por leitura, interpretação e apresentação. A nova estrutura divide essas tarefas entre \texttt{ILeitor} e suas subclasses, \texttt{IFormatador} e suas subclasses, e \texttt{GeradorDeRelatorio}.
+
+O sistema passa a combinar componentes independentes, em vez de criar uma classe para cada par de fonte e saída.
+
+\subsection{Template Method na leitura}
+O padrão \textbf{Template Method} aparece em \texttt{ILeitor}. O método \texttt{ler()} fixa a sequência: acessar o arquivo e interpretar seu conteúdo. A etapa variável, \texttt{parse()}, é implementada por \texttt{LeitorJSON} e \texttt{LeitorCSV}.
+
+A leitura comum é reutilizada, enquanto cada fonte define seu próprio parsing. \texttt{IFormatador} não representa esse padrão: apenas estabelece o contrato \texttt{formatar()}.
+
+\subsection{Strategy na escolha dos componentes}
+O padrão \textbf{Strategy} permite trocar leitores e formatadores sem alterar \texttt{GeradorDeRelatorio}. Por exemplo, \texttt{LeitorJSON} pode ser substituído por \texttt{LeitorCSV}; \texttt{FormatadorHTML}, por \texttt{FormatadorTXT} ou \texttt{FormatadorCSV}.
+
+O gerador utiliza sempre os métodos \texttt{ler()} e \texttt{formatar()}. As estratégias são escolhidas na entrada da aplicação e injetadas no construtor. \textbf{Entrada e saída podem variar de forma independente.}
+
+\subsection{Delimitação dos padrões reivindicados}
+A separação entre leitura e formatação lembra o \textbf{Bridge}, mas não caracteriza, por si só, sua aplicação canônica. Os padrões efetivamente demonstrados são \textbf{Template Method} e \textbf{Strategy}.
+
+Não há uma classe Factory implementada. Sua inclusão é opcional e não é necessária para atender ao objetivo da refatoração.
+
+\section{Relação com os princípios SOLID}
+
+
+\subsection{SRP --- Single Responsibility Principle}
+O \textbf{SRP} é atendido pela divisão das responsabilidades. Antes, os reporters liam, interpretavam e formatavam. Agora, \texttt{ILeitor} centraliza a leitura; as subclasses interpretam os dados; os formatadores produzem a saída; e \texttt{GeradorDeRelatorio} coordena as etapas.
+
+Cada componente passa a ter um motivo principal para mudar.
+
+\subsection{OCP --- Open/Closed Principle}
+O \textbf{OCP} é favorecido pela extensão com novas classes. Um \texttt{FormatadorMarkdown}, por exemplo, pode implementar \texttt{formatar(dados)} sem modificar o gerador ou os formatadores existentes. Novas fontes seguem o mesmo modelo por meio de \texttt{ILeitor}.
+
+Ainda é necessário registrar a nova classe no \texttt{index.js}. Portanto, a abertura para extensão é maior no núcleo do sistema do que na configuração inicial.
+
+\subsection{LSP --- Liskov Substitution Principle}
+O \textbf{LSP} é observado quando \texttt{LeitorJSON} e \texttt{LeitorCSV} podem ocupar o lugar de \texttt{ILeitor}, retornando coleções compatíveis. O mesmo vale para os formatadores, que recebem os dados e retornam uma string.
+
+A substituição depende do contrato: \texttt{cidades-1.json}, por exemplo, possui estrutura diferente e não é adaptado pelo leitor JSON atual.
+
+\subsection{ISP --- Interface Segregation Principle}
+O \textbf{ISP} é refletido em contratos pequenos. Leitores não precisam implementar formatação; formatadores não precisam implementar leitura.
+
+Em JavaScript, \texttt{ILeitor} e \texttt{IFormatador} são classes abstratas, não interfaces formais. Ainda assim, promovem a separação das responsabilidades.
+
+\subsection{DIP --- Dependency Inversion Principle}
+O \textbf{DIP} aparece na injeção de dependências por construtor. \texttt{GeradorDeRelatorio} recebe leitor e formatador, em vez de criar classes concretas. Sua lógica depende dos métodos \texttt{ler()} e \texttt{formatar()}.
+
+A compatibilidade é verificada dinamicamente. Imports não utilizados de \texttt{ILeitor} e \texttt{IFormatador} no gerador podem ser removidos.
+
+\textbf{Síntese:} SRP e DIP são as melhorias mais evidentes. OCP, LSP e ISP são favorecidos pela separação e substituição dos componentes.
+
+\section{Verificação funcional e preservação de comportamento}
+A finalidade do programa foi preservada. Os componentes foram testados com \texttt{cidades-2.json} (5.340 registros) e \texttt{cidades.csv} (5.570 registros). Durante o desenvolvimento, foi confirmado o funcionamento das \textbf{seis combinações} de entrada JSON/CSV e saída HTML/TXT/CSV.
+
+A execução utiliza o mesmo \texttt{GeradorDeRelatorio} em todos os casos. Como as fontes contêm registros diferentes, a validação considera os dados de cada arquivo, não uma igualdade entre as bases.
+
+Também devem ser verificados os casos de formato inválido, arquivo inexistente e a primeira linha do TXT. Esses testes podem ser automatizados antes da entrega.
+
+\section{Limitações e estado da implementação}
+A arquitetura está representada por \texttt{ILeitor}, \texttt{LeitorJSON}, \texttt{LeitorCSV}, \texttt{IFormatador}, \texttt{FormatadorHTML}, \texttt{FormatadorTXT}, \texttt{FormatadorCSV} e \texttt{GeradorDeRelatorio}. A seleção por linha de comando foi confirmada nas seis combinações.
+
+A correção do TXT e o tratamento de erros foram propostos em código, mas os arquivos finais não foram reenviados para conferência. Sua integração ao repositório deve ser verificada.
+
+O \texttt{LeitorCSV} utiliza \texttt{split(',')}, adequado aos dados fornecidos, mas insuficiente para campos CSV com vírgulas entre aspas. O \texttt{cidades-1.json} também exige adaptação específica. Essas limitações não impedem o atendimento aos requisitos básicos.
+
+\section{Conclusão}
+A refatoração eliminou a duplicação da leitura e separou obtenção, interpretação e apresentação dos dados. O \texttt{GeradorDeRelatorio} passou a coordenar essas etapas por composição. O \texttt{index.js} passou a selecionar fonte e formato por argumentos.
+
+Os padrões \textbf{Template Method} e \textbf{Strategy} sustentam a nova estrutura. Os princípios SOLID aparecem principalmente na responsabilidade única, na injeção de dependências e na facilidade de extensão.
+
+O suporte a CSV como entrada e saída, somado às seis combinações funcionais, demonstra o resultado da mudança. A correção do TXT e o tratamento de erros completam os ajustes de qualidade, sujeitos à verificação no repositório.
+
+\emph{Base da análise: código JavaScript, diagramas Mermaid e arquivos JSON/CSV fornecidos para o TP2.}
+
+\end{document}
