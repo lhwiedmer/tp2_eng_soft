@@ -6,19 +6,15 @@ export default class FormatadorCSV extends IFormatador {
       throw new TypeError('Os dados devem ser um array de cidades.');
     }
 
-    const campos = ['Estado', 'ID', 'Nome'];
-
     const linhas = dados.map(cidade => {
-      return campos.map(campo => {
-        const valor = String(cidade[campo] ?? '');
+      const nome = String(cidade.Nome ?? '');
 
-        return /[",\r\n]/.test(valor)
-          ? `"${valor.replace(/"/g, '""')}"`
-          : valor;
-      }).join(',');
+      return /[",\r\n]/.test(nome)
+        ? `"${nome.replace(/"/g, '""')}"`
+        : nome;
     });
 
-    return [campos.join(','), ...linhas].join('\n') + '\n';
+    return ['Cidade', ...linhas].join('\n') + '\n';
   }
 }
 
