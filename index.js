@@ -9,7 +9,32 @@ import FormatadorTXT from './src/Formatador/FormatadorTXT.js';
 import FormatadorCSV from './src/Formatador/FormatadorCSV.js';
 
 
-const [,, arquivo, formato] = process.argv;
+const argumentos = process.argv.slice(2);
+let arquivo;
+let formato;
+let argumentosValidos = true;
+
+if (argumentos.some(argumento => argumento.startsWith('--'))) {
+  const opcoes = {};
+
+  for (const argumento of argumentos) {
+    const opcao = argumento.match(/^--(format|source)=(.+)$/);
+
+    if (!opcao || opcoes[opcao[1]] !== undefined) {
+      argumentosValidos = false;
+      break;
+    }
+
+    opcoes[opcao[1]] = opcao[2];
+  }
+
+  arquivo = opcoes.source;
+  formato = opcoes.format;
+  argumentosValidos &&= Object.keys(opcoes).length === 2;
+} else {
+  [arquivo, formato] = argumentos;
+  argumentosValidos = argumentos.length === 2;
+}
 
 const leitores = {
   json: LeitorJSON,
@@ -27,9 +52,10 @@ const extensao = arquivo?.split('.').pop()?.toLowerCase();
 const Leitor = leitores[extensao];
 const Formatador = formatadores[formato?.toLowerCase()];
 
-if (!Leitor || !Formatador) {
+if (!argumentosValidos || !Leitor || !Formatador) {
   console.error('Erro: arquivo ou formato inválido.');
-  console.error('Uso: node index.js <arquivo> <html|txt|csv>');
+  console.error('Uso: node index.js --format=<html|txt|csv> --source=<arquivo>');
+  console.error('   ou: node index.js <arquivo> <html|txt|csv>');
   process.exit(1);
 }
 
