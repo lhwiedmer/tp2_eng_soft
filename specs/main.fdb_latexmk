@@ -1,0 +1,19 @@
+# Fdb version 4
+["pdflatex"] 1794842186.60861 "/home/lhwiedmer/faculdade/tp2_eng_soft/specs/main.tex" "main.pdf" "main" 1794842186.80845 2
+  "/etc/texmf/web2c/texmf.cnf" 1755911690.41395 475 c0e671620eb5563b2130f56340a5fde8 ""
+  "/home/lhwiedmer/faculdade/tp2_eng_soft/specs/main.tex" 1794841929.15872 12696 77798998c951faf33b146a32a839c265 ""
+  "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr12.tfm" 1136768653 1288 655e228510b4c2a1abe905c368440826 ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/article.cls" 1705352648 20144 147463a6a579f4597269ef9565205cfe ""
+  "/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo" 1705352648 8449 f07039d8e4e89f21078d9b5137579bfc ""
+  "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
+  "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
+  "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1755911879 8215993 315647ae13cafc5761fb4fe19ea9b4a9 ""
+  "main.aux" 1794842186.60707 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "main.tex" 1794841929.15872 12696 77798998c951faf33b146a32a839c265 ""
+  "spec_template.tex" 0 -1 0 ""
+  (generated)
+  "main.aux"
+  "main.log"
+  "main.pdf"
+  (rewritten before read)
