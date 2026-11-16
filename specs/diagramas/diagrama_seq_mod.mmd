@@ -1,0 +1,25 @@
+sequenceDiagram
+    actor Usuario as Usuário
+    participant CLI as index.js
+    participant Gerador as GeradorDeRelatorio
+    participant Leitor as ILeitor (JSON / CSV)
+    participant Formatador as IFormatador (HTML / TXT / CSV)
+
+    Usuario->>CLI: node index.js --source=arquivo --format=formato
+    
+    CLI->>CLI: Determina Leitor adequado pela extensão
+    CLI->>CLI: Determina Formatador adequado pelo argumento
+    CLI->>Gerador: new GeradorDeRelatorio(leitor, formatador)
+    
+    CLI->>Gerador: gerar(caminho)
+    
+    Gerador->>Leitor: ler(caminho)
+    Leitor->>Leitor: Lê o arquivo do sistema de arquivos (fs)
+    Leitor->>Leitor: parse(conteudo) (Específico da subclasse)
+    Leitor-->>Gerador: retorna Array de Objetos (dados)
+    
+    Gerador->>Formatador: formatar(dados)
+    Formatador-->>Gerador: retorna String formatada
+    
+    Gerador-->>CLI: retorna String do relatório
+    CLI-->>Usuario: imprime no console (console.log)

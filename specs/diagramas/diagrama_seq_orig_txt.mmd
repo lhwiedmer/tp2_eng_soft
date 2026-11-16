@@ -1,0 +1,21 @@
+sequenceDiagram
+    actor Usuario as Usuário
+    participant CLI as index.js
+    participant Reporter as CidadesTXTReporter
+    participant FS as node:fs
+
+    Usuario->>CLI: node index.js [filename] txt
+    
+    CLI->>Reporter: new CidadesTXTReporter()
+    
+    CLI->>Reporter: ler('./data/cidades-2.json')
+    Reporter->>FS: readFileSync('./data/cidades-2.json')
+    FS-->>Reporter: retorna string do arquivo
+    
+    CLI->>Reporter: parse()
+    Reporter->>Reporter: JSON.parse(this.cidades)
+    
+    CLI->>Reporter: reportar()
+    Reporter-->>CLI: retorna string em texto puro (TXT)
+    
+    CLI-->>Usuario: imprime no console (console.log)
