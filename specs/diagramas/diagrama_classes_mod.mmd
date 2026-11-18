@@ -31,8 +31,6 @@ classDiagram
     }
 
     class GeradorDeRelatorio {
-        -leitor : ILeitor
-        -formatador : IFormatador
         +constructor(leitor: ILeitor, formatador: IFormatador)
         +gerar(caminho: string) string
     }
@@ -40,9 +38,9 @@ classDiagram
     ILeitor <|-- LeitorJSON : herda
     ILeitor <|-- LeitorCSV : herda
 
-    IFormatador <|-- FormatadorHTML : implementa
-    IFormatador <|-- FormatadorTXT : implementa
-    IFormatador <|-- FormatadorCSV : implementa
+    IFormatador <|.. FormatadorHTML : implementa
+    IFormatador <|.. FormatadorTXT : implementa
+    IFormatador <|.. FormatadorCSV : implementa
 
-    GeradorDeRelatorio o-- ILeitor : compõe
-    GeradorDeRelatorio o-- IFormatador : compõe
+    GeradorDeRelatorio *-- ILeitor : compõe
+    GeradorDeRelatorio *-- IFormatador : compõe

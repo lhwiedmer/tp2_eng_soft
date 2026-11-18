@@ -4,7 +4,7 @@
 \input{spec_template}
 \usepackage[T1]{fontenc}
 \usepackage{float}
-\usepackage[brazil]{babel}
+\usepackage[brazilian]{babel}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{3pt plus 1pt minus 1pt}
 \hypersetup{hidelinks,pdftitle={TP2: Refatoracao de um Sistema de Geracao de Relatorios},pdflang={pt-BR}}
@@ -32,31 +32,31 @@
 	\section{Implementação original}
 	
 	O código original sofria com alta duplicação e baixo isolamento de responsabilidades. As classes \texttt{CidadesHTMLReport} e \texttt{CidadesTXTReporter} possuíam estruturas e fluxos de execução praticamente idênticos, como ilustrado nas Figuras \ref{fig:dia_cla_orig}, \ref{fig:dia_seq_html} e \ref{fig:dia_seq_txt}. 
-	
+
+	Além disso, cada classe acumulava tarefas muito distintas: acessar o arquivo, interpretar o conteúdo e apresentar os dados. Esse alto acoplamento tornava a adição de novos formatos um processo complexo, exigindo alterações em várias partes do sistema, inclusive no arquivo \texttt{index.js}, que operava com caminhos fixos e condicionais repetitivas.
 	\begin{figure}[!ht]
 		\centering
 		\caption{Diagrama de classes original}
-		\includegraphics[width=\textwidth]{diagramas/diagrama_classes_orig.pdf}
+		\includegraphics[width=0.8\textwidth]{diagramas/diagrama_classes_orig.png}
 		\label{fig:dia_cla_orig}
 	\end{figure}
 	
 	\begin{figure}[!ht]
 		\centering
 		\caption{Diagrama de sequência original para geração de html}
-		\includegraphics[width=\textwidth]{diagramas/diagrama_seq_orig_html.pdf}
+		\includegraphics[width=\textwidth]{diagramas/diagrama_seq_orig_html.png}
 		\label{fig:dia_seq_html}
 	\end{figure}
 	
+\clearpage
 	\begin{figure}[!ht]
 		\centering
 		\caption{Diagrama de sequência original para geração de txt}
-		\includegraphics[width=\textwidth]{diagramas/diagrama_seq_orig_txt.pdf}
+		\includegraphics[width=\textwidth]{diagramas/diagrama_seq_orig_txt.png}
 		\label{fig:dia_seq_txt}
 	\end{figure}
-	
-	Além disso, cada classe acumulava tarefas muito distintas: acessar o arquivo, interpretar o conteúdo e apresentar os dados. Esse alto acoplamento tornava a adição de novos formatos um processo complexo, exigindo alterações em várias partes do sistema, inclusive no arquivo \texttt{index.js}, que operava com caminhos fixos e condicionais repetitivas.
-	
-	\section{Refatorações realizadas}
+
+    \section{Refatorações realizadas}
 	
 	Para resolver os problemas identificados, foi aplicado um conjunto de refatorações focadas em modularidade e flexibilidade, resumidas a seguir.
 	
@@ -89,14 +89,14 @@
 	\begin{figure}[H]
 		\centering
 		\caption{Diagrama de classes após refatoração}
-		\includegraphics[width=\textwidth]{diagramas/diagrama_classes_mod.pdf}
+		\includegraphics[width=\textwidth]{diagramas/diagrama_classes_mod.png}
 		\label{fig:dia_cla_mod}
 	\end{figure}
 	
 	\begin{figure}[H]
 		\centering
 		\caption{Diagrama de sequência após refatoração}
-		\includegraphics[width=\textwidth]{diagramas/diagrama_seq_mod.pdf}
+		\includegraphics[width=\textwidth]{diagramas/diagrama_seq_mod.png}
 		\label{fig:dia_seq_mod}
 	\end{figure}
 	
@@ -107,8 +107,8 @@
 	A reestruturação do código foi guiada pelas boas práticas do SOLID, como apresentado a seguir:
 	
 	\begin{itemize}
-		\item \textbf{SRP (Responsabilidade Única):} Cada componente tem apenas um motivo para mudar. Leitores apenas leem; formatadores apenas formatam; o gerador apenas orquestra.
-		\item \textbf{OCP (Aberto/Fechado):} É fácil adicionar novos formatos. Um \texttt{FormatadorMarkdown}, por exemplo, pode ser acoplado ao sistema sem alterar os arquivos do gerador ou dos leitores existentes.
+		\item \textbf{SRP (Responsabilidade Única):} Cada componente tem apenas um objetivo. Leitores apenas leem; formatadores apenas formatam; o gerador apenas orquestra.
+		\item \textbf{OCP (Aberto/Fechado):} É fácil adicionar novos formatos. Um \texttt{FormatadorMarkdown}, por exemplo, pode ser adicionado ao sistema sem alterar os arquivos do gerador ou dos leitores existentes.
 		\item \textbf{LSP (Substituição de Liskov):} Qualquer subclasse de \texttt{ILeitor} ou \texttt{IFormatador} pode assumir o lugar de sua classe base sem quebrar o sistema, desde que respeite o contrato de entrada e saída.
 		\item \textbf{ISP (Segregação de Interfaces):} Os contratos base são enxutos e diretos. Leitores não carregam métodos inúteis de formatação e vice-versa.
 		\item \textbf{DIP (Inversão de Dependência):} A orquestração depende de abstrações (interfaces/classes base) em vez de implementações concretas, alcançada através da injeção de dependências no \texttt{GeradorDeRelatorio}.
@@ -118,5 +118,4 @@
 	A refatoração eliminou a duplicação da leitura e separou obtenção, interpretação e apresentação dos dados. O \texttt{GeradorDeRelatorio} passou a coordenar essas etapas por composição. O \texttt{index.js} passou a selecionar fonte e formato por argumentos.
 	
 	Os padrões \textbf{Template Method} e \textbf{Strategy} sustentam a nova estrutura. Os princípios SOLID aparecem principalmente na responsabilidade única, na injeção de dependências e na facilidade de extensão.
-	
 \end{document}

@@ -4,7 +4,7 @@ sequenceDiagram
     participant Reporter as CidadesHTMLReport
     participant FS as node:fs
 
-    Usuario->>CLI: node index.js [filename] html
+    Usuario->>CLI: node index.js html
     
     CLI->>Reporter: new CidadesHTMLReport()
     

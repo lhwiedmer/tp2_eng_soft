@@ -28,7 +28,8 @@ sub mermaid2png {
         "mmdc",
         "-p", "./puppeteer.json",
         "-i", $input,
-        "-o", $output
+        "-o", $output,
+        "--scale", "4"
     );
 
     return $status == 0 ? 0 : 1;

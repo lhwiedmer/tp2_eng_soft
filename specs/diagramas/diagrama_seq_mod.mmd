@@ -5,7 +5,7 @@ sequenceDiagram
     participant Leitor as ILeitor (JSON / CSV)
     participant Formatador as IFormatador (HTML / TXT / CSV)
 
-    Usuario->>CLI: node index.js --source=arquivo --format=formato
+    Usuario->>CLI: node index.js formato arquivo
     
     CLI->>CLI: Determina Leitor adequado pela extensão
     CLI->>CLI: Determina Formatador adequado pelo argumento
