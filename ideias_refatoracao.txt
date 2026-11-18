@@ -1,6 +1,0 @@
-- Usar o design pattern Bridge, separando a leitura e formatação dos dados em 
-duas classes pais diferentes
-- Usar o design pattern Template Method, um Pai para leitura e parsing, e outro
-para formatação, cada tipo de arquivo suportado é um filho
-- Imagino que o código interno das funções também vai precisar ser refatorado
-- É uma boa ideia modificar a estrutura de pastas
