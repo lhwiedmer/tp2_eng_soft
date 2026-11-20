@@ -9,23 +9,31 @@ import FormatadorCSV from './src/Formatador/FormatadorCSV.js';
 
 
 const argumentos = process.argv.slice(2);
+let arquivo;
+let formato;
+let argumentosValidos = true;
 
-const mensagemDeUso = [
-  'Uso: node index.js <formato> <arquivo>',
-  '  formato: html, txt ou csv',
-  '  arquivo: caminho para um arquivo .json ou .csv',
-  '',
-  'Exemplo: node index.js html dados.json'
-].join('\n');
+if (argumentos.some(argumento => argumento.startsWith('--'))) {
+  const opcoes = {};
 
-const pedidoDeAjuda = ['-h', '-help', 'help', '--help'];
+  for (const argumento of argumentos) {
+    const opcao = argumento.match(/^--(format|source)=(.+)$/);
 
-if (argumentos.length === 1 && pedidoDeAjuda.includes(argumentos[0].toLowerCase())) {
-  console.log(mensagemDeUso);
-  process.exit(0);
+    if (!opcao || opcoes[opcao[1]] !== undefined) {
+      argumentosValidos = false;
+      break;
+    }
+
+    opcoes[opcao[1]] = opcao[2];
+  }
+
+  arquivo = opcoes.source;
+  formato = opcoes.format;
+  argumentosValidos &&= Object.keys(opcoes).length === 2;
+} else {
+  [arquivo, formato] = argumentos;
+  argumentosValidos = argumentos.length === 2;
 }
-
-const [formato, arquivo] = argumentos;
 
 const leitores = {
   json: LeitorJSON,
@@ -43,10 +51,10 @@ const extensao = arquivo?.split('.').pop()?.toLowerCase();
 const Leitor = leitores[extensao];
 const Formatador = formatadores[formato?.toLowerCase()];
 
-if (argumentos.length !== 2 || !Leitor || !Formatador) {
-  console.error('Erro: comando inválido.');
-  console.error('');
-  console.error(mensagemDeUso);
+if (!argumentosValidos || !Leitor || !Formatador) {
+  console.error('Erro: arquivo ou formato inválido.');
+  console.error('Uso: node index.js --format=<html|txt|csv> --source=<arquivo>');
+  console.error('   ou: node index.js <arquivo> <html|txt|csv>');
   process.exit(1);
 }
 
